@@ -1,203 +1,76 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050008">
+  <title>Uma Galáxia de Amor para Você</title>
+  <link rel="stylesheet" href="style.css">
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Uma Galáxia de Amor</title>
-
-    <link rel="stylesheet" href="style.css">
-
+  <!-- Three.js via CDN. O import map permite que os módulos "addons" (bloom) encontrem o "three". -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
-
-
 <body>
 
+  <!-- Cena WebGL (galáxia, coração, frases, estrelas) -->
+  <canvas id="scene" aria-label="Galáxia de partículas em 3D"></canvas>
 
-    <!-- ==================================================
-         INTRODUÇÃO
-    ================================================== -->
+  <!-- Véu escuro que aparece atrás dos cartões de memória -->
+  <div id="veil"></div>
 
-    <section class="intro" id="intro">
+  <!-- ABERTURA -->
+  <section id="intro" class="screen">
+    <div class="intro-inner">
+      <h1 class="intro-title">Uma Galáxia de Amor para Você</h1>
 
-        <div class="intro-code" id="introCode"></div>
+      <svg class="intro-art" viewBox="0 0 120 110" aria-hidden="true">
+        <defs>
+          <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffa3d3"/>
+            <stop offset="1" stop-color="#ff2a7a"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="60" cy="64" rx="56" ry="15" fill="none" stroke="rgba(255,130,195,.4)" stroke-width="1" stroke-dasharray="1 5" stroke-linecap="round" transform="rotate(-16 60 64)"/>
+        <path d="M60 96 C20 66 10 41 23 26 C35 12 52 16 60 32 C68 16 85 12 97 26 C110 41 100 66 60 96 Z" fill="rgba(255,42,122,.10)" stroke="url(#hg)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M60 80 C36 62 31 47 39 38 C46 31 56 34 60 43 C64 34 74 31 81 38 C89 47 84 62 60 80 Z" fill="none" stroke="rgba(255,190,225,.75)" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M60 3 L62.2 9.8 L69 12 L62.2 14.2 L60 21 L57.8 14.2 L51 12 L57.8 9.8 Z" fill="#fff"/>
+        <path d="M14 44 L15.2 47.8 L19 49 L15.2 50.2 L14 54 L12.8 50.2 L9 49 L12.8 47.8 Z" fill="#ffc2e2"/>
+        <path d="M105 52 L106 55 L109 56 L106 57 L105 60 L104 57 L101 56 L104 55 Z" fill="#ffc2e2"/>
+      </svg>
 
-        <div class="intro-heart">
-            ♡
-        </div>
+      <p class="intro-sub">Meu coração, minha vida, meu tudo</p>
 
-        <div class="intro-small">
-            PARA VOCÊ
-        </div>
+      <button id="enter" class="cta" type="button">Entrar no nosso universo</button>
+    </div>
+  </section>
 
-        <h1>
-            Fiz uma galáxia
-            <br>
-            <span>de amor pra você.</span>
-        </h1>
+  <!-- CARTÕES DE MEMÓRIA (gerados pelo script.js) -->
+  <div id="cards" aria-live="polite"></div>
 
-        <p class="intro-description">
+  <!-- FINAL -->
+  <section id="final" aria-live="polite">
+    <h2 id="final-title"></h2>
+    <p id="final-text"></p>
+    <button id="replay" type="button">Recomeçar</button>
+  </section>
 
-            Entre estrelas, memórias e palavras
-            <br>
-            que talvez nunca sejam suficientes.
+  <!-- HUD mínimo -->
+  <p id="hint">Toque nos planetas para abrir as lembranças ♥</p>
+  <button id="next" type="button">Próxima lembrança ♥</button>
+  <button id="sound" type="button" aria-label="Ativar ou silenciar a música">🔇</button>
 
-        </p>
+  <!-- Música opcional: coloque seu arquivo em assets/music.mp3 -->
+  <audio id="music" src="assets/music.mp3" loop preload="none"></audio>
 
-        <button id="startButton">
+  <noscript><p class="noscript">Você precisa ativar o JavaScript para entrar neste universo.</p></noscript>
 
-            <span>♡</span>
-
-            VER MINHA GALÁXIA
-
-            <span>♡</span>
-
-        </button>
-
-    </section>
-
-
-
-    <!-- ==================================================
-         GALÁXIA
-    ================================================== -->
-
-    <main
-        class="galaxy"
-        id="galaxy"
-    >
-
-        <div
-            id="scene"
-            class="scene"
-        ></div>
-
-
-        <!-- Vinheta para deixar o espaço cinematográfico -->
-
-        <div class="vignette"></div>
-
-
-        <!-- ==================================================
-             TEXTO DA CENA
-        ================================================== -->
-
-        <div
-            class="scene-title"
-            id="sceneTitle"
-        >
-
-            <div class="scene-subtitle">
-                MEU UNIVERSO
-            </div>
-
-            <div class="scene-main">
-                você é meu lugar favorito
-            </div>
-
-        </div>
-
-
-        <!-- ==================================================
-             CONTROLES
-        ================================================== -->
-
-        <button
-            class="corner-button left"
-            id="musicButton"
-            aria-label="Música"
-        >
-            ♫
-        </button>
-
-
-        <button
-            class="corner-button right"
-            id="infoButton"
-            aria-label="Informações"
-        >
-            ✦
-        </button>
-
-
-        <!-- ==================================================
-             MEMÓRIA
-        ================================================== -->
-
-        <div
-            class="memory-overlay"
-            id="memoryOverlay"
-        >
-
-            <div class="memory-box">
-
-                <img
-                    id="memoryImage"
-                    class="memory-image"
-                    src="assets/memory-1.jpg"
-                    alt="Foto da memória"
-                >
-
-                <div class="memory-symbol">
-                    ♡
-                </div>
-
-                <h2 id="memoryTitle">
-                    Para Sempre
-                </h2>
-
-                <p id="memoryText">
-
-                    Algumas coisas não precisam
-                    de explicação.
-
-                    Elas simplesmente fazem sentido.
-
-                </p>
-
-                <button
-                    id="closeMemory"
-                >
-                    FECHAR
-                </button>
-
-            </div>
-
-        </div>
-
-
-    </main>
-
-
-
-    <!-- ==================================================
-         THREE.JS
-    ================================================== -->
-
-    <script type="importmap">
-
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
-        }
-    }
-
-    </script>
-
-
-    <script
-        type="module"
-        src="script.js"
-    ></script>
-
-
+  <script type="module" src="script.js"></script>
 </body>
-
 </html>
