@@ -47,6 +47,26 @@ const musicButton =
 
 
 /* =========================================================
+   DETECÇÃO MOBILE / PERFORMANCE
+========================================================= */
+
+const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+    ) ||
+    (window.matchMedia &&
+        window.matchMedia("(max-width: 768px)").matches) ||
+    ("ontouchstart" in window &&
+        window.innerWidth < 900);
+
+
+const isLowPower =
+    isMobile ||
+    (navigator.hardwareConcurrency &&
+        navigator.hardwareConcurrency <= 4);
+
+
+/* =========================================================
    INTRO — CÓDIGOS
 ========================================================= */
 
@@ -114,12 +134,14 @@ camera.position.set(
 const renderer =
     new THREE.WebGLRenderer({
 
-        antialias: true,
+        antialias: !isMobile,
 
         alpha: false,
 
         powerPreference:
-            "high-performance"
+            isMobile
+                ? "low-power"
+                : "high-performance"
 
     });
 
@@ -127,7 +149,7 @@ const renderer =
 renderer.setPixelRatio(
     Math.min(
         window.devicePixelRatio,
-        2
+        isMobile ? 1.5 : 2
     )
 );
 
@@ -210,9 +232,9 @@ const bloomPass =
             window.innerWidth,
             window.innerHeight
         ),
-        0.55,
-        0.4,
-        0.32
+        isMobile ? 0.35 : 0.55,
+        isMobile ? 0.3 : 0.4,
+        isMobile ? 0.4 : 0.32
     );
 
 
@@ -239,27 +261,83 @@ let targetMouseY = 0;
 
 
 /* =========================================================
-   MOUSE
+   MOUSE + TOUCH
 ========================================================= */
+
+function updatePointer(clientX, clientY) {
+
+    targetMouseX =
+        (
+            clientX /
+            window.innerWidth
+        ) * 2 - 1;
+
+    targetMouseY =
+        (
+            clientY /
+            window.innerHeight
+        ) * 2 - 1;
+
+}
+
 
 window.addEventListener(
     "mousemove",
     (event) => {
-
-        targetMouseX =
-            (
-                event.clientX /
-                window.innerWidth
-            ) * 2 - 1;
-
-
-        targetMouseY =
-            (
-                event.clientY /
-                window.innerHeight
-            ) * 2 - 1;
-
+        updatePointer(
+            event.clientX,
+            event.clientY
+        );
     }
+);
+
+
+window.addEventListener(
+    "touchmove",
+    (event) => {
+
+        if (
+            event.touches.length > 0
+        ) {
+
+            const touch =
+                event.touches[0];
+
+            updatePointer(
+                touch.clientX,
+                touch.clientY
+            );
+
+            // evita scroll da página
+            event.preventDefault();
+
+        }
+
+    },
+    { passive: false }
+);
+
+
+window.addEventListener(
+    "touchstart",
+    (event) => {
+
+        if (
+            event.touches.length > 0
+        ) {
+
+            const touch =
+                event.touches[0];
+
+            updatePointer(
+                touch.clientX,
+                touch.clientY
+            );
+
+        }
+
+    },
+    { passive: true }
 );
 
 
@@ -482,7 +560,7 @@ scene.add(
 
 function createStars() {
 
-    const count = 8500;
+    const count = isLowPower ? 2800 : 8500;
 
     const positions =
         new Float32Array(
@@ -603,7 +681,7 @@ const stars =
 
 function createTinyStars() {
 
-    const count = 1800;
+    const count = isLowPower ? 600 : 1800;
 
     const positions =
         new Float32Array(
@@ -714,7 +792,7 @@ const tinyStars =
 
 function createFloor() {
 
-    const count = 12000;
+    const count = isLowPower ? 3500 : 12000;
 
     const positions =
         new Float32Array(
@@ -982,7 +1060,7 @@ const orbit1 =
     createOrbit(
         240,
         -135,
-        1500,
+        isLowPower ? 500 : 1500,
         0
     );
 
@@ -991,7 +1069,7 @@ const orbit2 =
     createOrbit(
         390,
         -140,
-        1900,
+        isLowPower ? 650 : 1900,
         0.7
     );
 
@@ -1000,7 +1078,7 @@ const orbit3 =
     createOrbit(
         560,
         -145,
-        2400,
+        isLowPower ? 800 : 2400,
         1.8
     );
 
@@ -1009,7 +1087,7 @@ const orbit4 =
     createOrbit(
         760,
         -150,
-        2900,
+        isLowPower ? 900 : 2900,
         2.8
     );
 
@@ -1020,7 +1098,7 @@ const orbit4 =
 
 function createCentralSpiral() {
 
-    const count = 2800;
+    const count = isLowPower ? 900 : 2800;
 
     const positions =
         new Float32Array(
@@ -1147,7 +1225,7 @@ const centralSpiral =
 
 function createHeart() {
 
-    const count = 9000;
+    const count = isLowPower ? 2800 : 9000;
 
     const scale = 12;
 
@@ -1716,9 +1794,13 @@ function createHeartCode() {
         "01 ERROR 404 LOVE ♡ {} [] <> /";
 
 
+    const codeCount =
+        isLowPower ? 120 : 430;
+
+
     for (
         let i = 0;
-        i < 430;
+        i < codeCount;
         i++
     ) {
 
@@ -3235,11 +3317,11 @@ function animate() {
         */
 
         const desiredZ =
-            720 +
+            (isMobile ? 680 : 720) +
             Math.sin(
                 elapsed * 0.22
             ) *
-            25;
+            (isMobile ? 15 : 25);
 
 
         camera.position.z +=
@@ -3252,18 +3334,25 @@ function animate() {
 
         /*
            Movimento seguindo
-           o mouse.
+           o mouse / toque.
         */
+
+        const moveRangeX =
+            isMobile ? 60 : 100;
+
+        const moveRangeY =
+            isMobile ? 35 : 55;
+
 
         const desiredX =
             mouseX *
-            100;
+            moveRangeX;
 
 
         const desiredY =
             110 -
             mouseY *
-            55;
+            moveRangeY;
 
 
         camera.position.x +=
