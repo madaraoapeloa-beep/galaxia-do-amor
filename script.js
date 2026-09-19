@@ -460,9 +460,9 @@ function createCore() {
   const tex1 = makeGlowTexture([[0, 'rgba(255,225,240,1)'], [0.25, 'rgba(255,110,190,.6)'], [0.6, 'rgba(255,40,140,.15)'], [1, 'rgba(255,40,140,0)']]);
   const tex2 = makeGlowTexture([[0, 'rgba(255,60,160,.5)'], [0.5, 'rgba(200,20,110,.12)'], [1, 'rgba(200,20,110,0)']]);
   coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex1, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, fog: false }));
-  coreGlow.scale.setScalar(4.6);
+  coreGlow.scale.setScalar(isMobile ? 3.6 : 4.6);
   coreGlow2 = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex2, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, fog: false }));
-  coreGlow2.scale.setScalar(11);
+  coreGlow2.scale.setScalar(isMobile ? 8 : 11);
   galaxySpin.add(coreGlow2, coreGlow);
 }
 
@@ -505,7 +505,7 @@ function createHeart() {
     size[i] = 0.035 + Math.pow(Math.random(), 3) * 0.11;
     rnd[i] = Math.random();
   }
-  mats.heart = makeParticleMaterial({ alpha: 0.85, scatter: 5, wobble: 4 });
+  mats.heart = makeParticleMaterial({ alpha: isMobile ? 1 : 0.85, scatter: 5, wobble: 4, sizeMul: isMobile ? 1.5 : 1 });
   heartPoints = new THREE.Points(makeGeometry(pos, col, size, rnd), mats.heart);
   heartPoints.scale.setScalar(HEART_SCALE);
   heartPoints.frustumCulled = false;
@@ -695,7 +695,7 @@ function heartPath(ctx, cx, cy, s) {
     const t = (i / 64) * TAU;
     const x = 16 * Math.pow(Math.sin(t), 3);
     const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    const px = cx + (x * s) / 17, py = cy + ((y + 2.5) * s) / 17;
+    const px = cx + (x * s) / 17, py = cy + ((y - 2.5) * s) / 17;
     if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
   }
   ctx.closePath();
@@ -708,12 +708,13 @@ function getSymbolTexture(type, color) {
   c.width = c.height = 128;
   const ctx = c.getContext('2d');
   ctx.shadowColor = color; ctx.shadowBlur = 16; ctx.fillStyle = color; ctx.strokeStyle = color;
+  if (type === 'heart' || type === 'outline') ctx.shadowBlur = 11;
 
   if (type === 'heart') {
-    heartPath(ctx, 64, 64, 78); ctx.fill();
+    heartPath(ctx, 64, 64, 50); ctx.fill();
   } else if (type === 'outline') {
-    ctx.lineWidth = 5; ctx.lineJoin = 'round';
-    heartPath(ctx, 64, 64, 76); ctx.stroke();
+    ctx.lineWidth = 4.5; ctx.lineJoin = 'round';
+    heartPath(ctx, 64, 64, 48); ctx.stroke();
   } else if (type === 'star') {
     ctx.beginPath();
     for (let i = 0; i < 8; i++) {
@@ -739,8 +740,10 @@ function createFloatingHearts() {
 
   for (let i = 0; i < Q.floats; i++) {
     const near = i < 7;   // alguns bem próximos da câmera
+    const type = pick(types);
+    const bigger = (type === 'heart' || type === 'outline') ? 1.3 : 1;
     const mat = new THREE.SpriteMaterial({
-      map: getSymbolTexture(pick(types), pick(colors)),
+      map: getSymbolTexture(type, pick(colors)),
       transparent: true, depthWrite: false, opacity: 0, blending: THREE.AdditiveBlending,
     });
     const sp = new THREE.Sprite(mat);
@@ -750,7 +753,7 @@ function createFloatingHearts() {
       theta0: Math.random() * TAU,
       speed: rand(0.01, 0.04) * (Math.random() < 0.5 ? -1 : 1),
       y: near ? rand(2, 10) : rand(-10, 11),
-      size: near ? rand(0.7, 1.3) : rand(0.45, 1.5),
+      size: (near ? rand(0.7, 1.3) : rand(0.45, 1.5)) * bigger,
       amp: rand(0.3, 1.1), ph: Math.random() * TAU, pulse: 0,
     };
     floatGroup.add(sp);
@@ -1203,8 +1206,9 @@ function setupPostProcessing() {
   composer.addPass(new RenderPass(scene, camera));
   bloomPass = new UnrealBloomPass(
     new THREE.Vector2(W, H),
-    isMobile ? LOOK.bloomStrength * 0.9 : LOOK.bloomStrength,
-    LOOK.bloomRadius, LOOK.bloomThreshold
+    isMobile ? LOOK.bloomStrength * 0.5 : LOOK.bloomStrength,
+    isMobile ? LOOK.bloomRadius * 0.7 : LOOK.bloomRadius,
+    isMobile ? 0.32 : LOOK.bloomThreshold
   );
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
@@ -1535,9 +1539,9 @@ function updateWorld(dt) {
     p.group.visible = u.rv > 0.01;
     p.group.scale.setScalar(u.radius * planetScale * (0.3 + 0.7 * u.rv) * (1 + 0.16 * u.pulse));
     p.mesh.rotation.y += dt * u.spin;
-    p.mat.uniforms.uBright.value = u.rv * LOOK.planetBrightness;
+    p.mat.uniforms.uBright.value = u.rv * LOOK.planetBrightness * (isMobile ? 0.78 : 1);
     const glow = visited.has(u.idx) ? 0.3 : 0.45 + 0.2 * Math.sin(time * 1.6 + u.ph);
-    p.halo.material.opacity = u.rv * glow;
+    p.halo.material.opacity = u.rv * glow * (isMobile ? 0.55 : 1);
     if (p.ring) p.ring.material.opacity = u.rv * 0.9;
     u.pulse *= Math.exp(-3 * dt);
   });
@@ -1610,11 +1614,11 @@ function handleResize() {
   composer.setPixelRatio(currentPR);
   composer.setSize(W, H);
 
-  shared.uScale.value = H * currentPR * 0.5;
   shared.uAspect.value = aspect;
 
   // retrato: afasta a câmera e aumenta os textos para tudo caber e continuar legível
   fit = aspect < 1 ? Math.pow(1 / aspect, 0.75) : 1;
+  shared.uScale.value = H * currentPR * 0.5 * (1 + (fit - 1) * 0.6);
   fitSoft = 1 + (fit - 1) * 0.5;
   textScale = 1 + (fit - 1) * 0.9;
   planetScale = 1 + (fit - 1) * 0.75;
