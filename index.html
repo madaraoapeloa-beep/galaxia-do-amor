@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Uma Galáxia de Amor</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- ==================================================
+         INTRODUÇÃO
+    ================================================== -->
+
+    <section class="intro" id="intro">
+
+        <div class="intro-code" id="introCode"></div>
+
+        <div class="intro-heart">
+            ♡
+        </div>
+
+        <div class="intro-small">
+            PARA VOCÊ
+        </div>
+
+        <h1>
+            Fiz uma galáxia
+            <br>
+            <span>de amor pra você.</span>
+        </h1>
+
+        <p class="intro-description">
+
+            Entre estrelas, memórias e palavras
+            <br>
+            que talvez nunca sejam suficientes.
+
+        </p>
+
+        <button id="startButton">
+
+            <span>♡</span>
+
+            VER MINHA GALÁXIA
+
+            <span>♡</span>
+
+        </button>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         GALÁXIA
+    ================================================== -->
+
+    <main
+        class="galaxy"
+        id="galaxy"
+    >
+
+        <div
+            id="scene"
+            class="scene"
+        ></div>
+
+
+        <!-- Vinheta para deixar o espaço cinematográfico -->
+
+        <div class="vignette"></div>
+
+
+        <!-- ==================================================
+             TEXTO DA CENA
+        ================================================== -->
+
+        <div
+            class="scene-title"
+            id="sceneTitle"
+        >
+
+            <div class="scene-subtitle">
+                MEU UNIVERSO
+            </div>
+
+            <div class="scene-main">
+                você é meu lugar favorito
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CONTROLES
+        ================================================== -->
+
+        <button
+            class="corner-button left"
+            id="musicButton"
+            aria-label="Música"
+        >
+            ♫
+        </button>
+
+
+        <button
+            class="corner-button right"
+            id="infoButton"
+            aria-label="Informações"
+        >
+            ✦
+        </button>
+
+
+        <!-- ==================================================
+             MEMÓRIA
+        ================================================== -->
+
+        <div
+            class="memory-overlay"
+            id="memoryOverlay"
+        >
+
+            <div class="memory-box">
+
+                <img
+                    id="memoryImage"
+                    class="memory-image"
+                    src="assets/memory-1.jpg"
+                    alt="Foto da memória"
+                >
+
+                <div class="memory-symbol">
+                    ♡
+                </div>
+
+                <h2 id="memoryTitle">
+                    Para Sempre
+                </h2>
+
+                <p id="memoryText">
+
+                    Algumas coisas não precisam
+                    de explicação.
+
+                    Elas simplesmente fazem sentido.
+
+                </p>
+
+                <button
+                    id="closeMemory"
+                >
+                    FECHAR
+                </button>
+
+            </div>
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- ==================================================
+         THREE.JS
+    ================================================== -->
+
+    <script type="importmap">
+
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+        }
+    }
+
+    </script>
+
+
+    <script
+        type="module"
+        src="script.js"
+    ></script>
+
+
+</body>
+
+</html>
